@@ -1,0 +1,42 @@
+version: '3.3'
+
+services:
+
+  db:
+    container_name: "database"
+    image: postgres:13
+    restart: always
+    env_file:
+      - '.env'
+    volumes:
+      - ./database:/var/lib/postgresql/
+    ports:
+      - 5430:5432
+
+  bot:
+    container_name: "$BOT_CONTAINER_NAME"
+    stop_signal: SIGINT
+    build:
+      context: .
+    working_dir: "/usr/src/app/${BOT_NAME:-tg_bot}"
+    volumes:
+    - .:/usr/src/app/${BOT_NAME:-tg_bot}
+    command: python3 -m bot
+    restart: always
+    env_file:
+      - ".env"
+    depends_on: 
+    - db
+
+
+  adminer:
+    container_name: "adminer"
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+    depends_on: 
+      - db
+    env_file:
+      - '.env'
+
